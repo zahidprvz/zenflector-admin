@@ -9,7 +9,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyB5koHF_sAxRM75MQ1XYbol1vJM813PgGA",
   authDomain: "zenflector-9bbba.firebaseapp.com",
   projectId: "zenflector-9bbba",
-  storageBucket: "zenflector-9bbba.appspot.com",  // ✅ Corrected here
+  storageBucket: "zenflector-9bbba.firebasestorage.app",  // ✅ Corrected here
   messagingSenderId: "1078175017564",
   appId: "1:1078175017564:web:74d6b8ece1ee4018c8d499",
   measurementId: "G-48EZ6SVZST"

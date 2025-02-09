@@ -18,47 +18,46 @@ const firebaseService = {
     },
 
     uploadGenreImage: async (file) => {
-     if (!file) return null;
-
-     try {
-          const storageRef = ref(storage, `genre_images/${uuidv4()}_${file.name}`);
-          const uploadTask = uploadBytesResumable(storageRef, file);
-
-        return new Promise((resolve, reject) => {
-            uploadTask.on('state_changed',
-                (snapshot) => {
-                // You could track progress here if you wanted (optional).
-                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                console.log('Upload is ' + progress + '% done');
-                },
-                (error) => {
-                console.error("Error uploading image:", error);
-                reject(error);
-                },
-                async () => {
-                // Handle successful uploads on complete
-                try {
-                    const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                    resolve(downloadURL);
-                } catch (urlError) {
-                    reject(urlError);
-                }
-            });
-        });
-
-     } catch (error) {
-        console.error("Error in uploadGenreImage: ", error);
-        throw error; // Re-throw the error so the calling function knows it failed.
-     }
-    },
-
-    uploadAudioFile: async (file, genreId) => {
         if (!file) return null;
 
         try {
-            const storageRef = ref(storage, `audio/${genreId}/${uuidv4()}_${file.name}`);
+            // CORRECTED PATH: Include 'audio/' prefix
+            const storageRef = ref(storage, `audio/genre_images/${uuidv4()}_${file.name}`);
             const uploadTask = uploadBytesResumable(storageRef, file);
 
+            return new Promise((resolve, reject) => {
+                uploadTask.on('state_changed',
+                    (snapshot) => {
+                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                        console.log('Upload is ' + progress + '% done');
+                    },
+                    (error) => {
+                        console.error("Error uploading image:", error);
+                        reject(error);
+                    },
+                    async () => {
+                        try {
+                            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                            resolve(downloadURL);
+                        } catch (urlError) {
+                            reject(urlError);
+                        }
+                    });
+            });
+
+        } catch (error) {
+            console.error("Error in uploadGenreImage: ", error);
+            throw error;
+        }
+    },
+
+
+  uploadAudioFile: async (file, genreId) => {
+        if (!file) return null;
+        try {
+            // Corrected to remove genreId
+            const storageRef = ref(storage, `audio/${uuidv4()}_${file.name}`);
+            const uploadTask = uploadBytesResumable(storageRef, file);
 
             return new Promise((resolve, reject) => {
               uploadTask.on('state_changed',
