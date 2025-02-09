@@ -1,4 +1,4 @@
-    // src/api/firebaseService.js
+// src/api/firebaseService.js
 import { db, storage } from '../../firebase';
 import { collection, getDocs, addDoc, doc, setDoc } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
