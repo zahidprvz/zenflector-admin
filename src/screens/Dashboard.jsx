@@ -1,4 +1,4 @@
-// src/screens/Dashboard.js
+// src/screens/Dashboard.jsx
 import React from 'react';
 import { Link } from 'react-router-dom';
 import Box from '@mui/material/Box';
@@ -10,6 +10,8 @@ import ListItemText from '@mui/material/ListItemText';
 import CategoryIcon from '@mui/icons-material/Category'; // For Genres
 import MusicNoteIcon from '@mui/icons-material/MusicNote'; // For Audio
 import Divider from '@mui/material/Divider';
+import PolicyIcon from '@mui/icons-material/Policy'; // For Privacy Policy
+import DescriptionIcon from '@mui/icons-material/Description'; // For Terms of Service
 
 const Dashboard = () => {
   return (
@@ -31,6 +33,18 @@ const Dashboard = () => {
             <MusicNoteIcon />
           </ListItemIcon>
           <ListItemText primary="Manage Audio" />
+        </ListItem>
+        <ListItem button component={Link} to="/privacy"> {/* Add link */}
+          <ListItemIcon>
+            <PolicyIcon />
+          </ListItemIcon>
+          <ListItemText primary="Privacy Policy" />
+        </ListItem>
+        <ListItem button component={Link} to="/terms"> {/* Add link */}
+          <ListItemIcon>
+            <DescriptionIcon/>
+          </ListItemIcon>
+          <ListItemText primary="Terms of Service" />
         </ListItem>
         {/* Add more links as you add more features (e.g., Users, Reports) */}
       </List>
