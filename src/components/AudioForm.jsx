@@ -44,9 +44,7 @@ const AudioForm = ({ onSubmit }) => {
         if (file) {
             setAudioFile(file);
             setAudioFileName(file.name);
-
-            const audioURL = URL.createObjectURL(file);
-            setAudioPreview(audioURL);
+            setAudioPreview(URL.createObjectURL(file));
         }
     };
 
@@ -93,8 +91,8 @@ const AudioForm = ({ onSubmit }) => {
             title: data.title,
             artist: data.artist,
             genreId: selectedGenre,
-            description: data.description, // New: Audio Description
-            duration: totalSeconds, // Converted from minutes and seconds
+            description: data.description,
+            duration: totalSeconds,
             imageUrl: null,
             fileUrl: null,
         };
@@ -244,6 +242,13 @@ const AudioForm = ({ onSubmit }) => {
                 <Box sx={{ mt: 2 }}>
                     <img src={imagePreview} alt="Preview" style={{ maxWidth: '100%', maxHeight: '200px' }} />
                 </Box>
+            )}
+
+            {/* Uploading Message */}
+            {isUploading && (
+                <Typography variant="body1" color="primary" align="center" sx={{ mt: 2 }}>
+                    Uploading files to Firebase, please wait...
+                </Typography>
             )}
 
             {/* Submit Button */}
