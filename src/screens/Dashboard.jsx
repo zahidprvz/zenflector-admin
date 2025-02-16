@@ -34,6 +34,12 @@ const Dashboard = () => {
           </ListItemIcon>
           <ListItemText primary="Manage Audio" />
         </ListItem>
+        <ListItem button component={Link} to="/audio-list">
+          <ListItemIcon>
+            <MusicNoteIcon />
+          </ListItemIcon>
+          <ListItemText primary="Edit Audio" />
+        </ListItem>
         <ListItem button component={Link} to="/privacy"> {/* Add link */}
           <ListItemIcon>
             <PolicyIcon />
@@ -46,12 +52,7 @@ const Dashboard = () => {
           </ListItemIcon>
           <ListItemText primary="Terms of Service" />
         </ListItem>
-        <ListItem button component={Link} to="/audio-list">
-          <ListItemIcon>
-            <MusicNoteIcon />
-          </ListItemIcon>
-          <ListItemText primary="Edit Audio" />
-        </ListItem>
+     
         {/* Add more links as you add more features (e.g., Users, Reports) */}
       </List>
     </Box>
