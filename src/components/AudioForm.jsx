@@ -1,16 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import TextField from '@mui/material/TextField';
-import Button from '@mui/material/Button';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Alert from '@mui/material/Alert';
-import CircularProgress from '@mui/material/CircularProgress';
+import {
+    TextField, Button, Select, MenuItem, FormControl, InputLabel, Box, Typography,
+    Alert, CircularProgress, IconButton, Grid
+} from '@mui/material';
 import { v4 as uuidv4 } from 'uuid';
+import DeleteIcon from '@mui/icons-material/Delete';
 import firebaseService from '../api/firebaseService';
 
 const AudioForm = ({ onSubmit }) => {
@@ -19,10 +14,13 @@ const AudioForm = ({ onSubmit }) => {
     const [selectedGenre, setSelectedGenre] = useState('');
     const [audioFile, setAudioFile] = useState(null);
     const [audioFileName, setAudioFileName] = useState('');
+    const [audioPreview, setAudioPreview] = useState(null);
     const [imageFile, setImageFile] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
     const [submitError, setSubmitError] = useState(null);
-    const [isUploading, setIsUploading] = useState(false); // Upload state
+    const [isUploading, setIsUploading] = useState(false);
+    const [minutes, setMinutes] = useState('');
+    const [seconds, setSeconds] = useState('');
 
     useEffect(() => {
         const fetchGenres = async () => {
@@ -46,9 +44,9 @@ const AudioForm = ({ onSubmit }) => {
         if (file) {
             setAudioFile(file);
             setAudioFileName(file.name);
-        } else {
-            setAudioFile(null);
-            setAudioFileName('');
+
+            const audioURL = URL.createObjectURL(file);
+            setAudioPreview(audioURL);
         }
     };
 
@@ -57,14 +55,20 @@ const AudioForm = ({ onSubmit }) => {
         if (file) {
             setImageFile(file);
             const reader = new FileReader();
-            reader.onloadend = () => {
-                setImagePreview(reader.result);
-            };
+            reader.onloadend = () => setImagePreview(reader.result);
             reader.readAsDataURL(file);
-        } else {
-            setImageFile(null);
-            setImagePreview(null);
         }
+    };
+
+    const clearAudioSelection = () => {
+        setAudioFile(null);
+        setAudioFileName('');
+        setAudioPreview(null);
+    };
+
+    const clearImageSelection = () => {
+        setImageFile(null);
+        setImagePreview(null);
     };
 
     const onSubmitForm = async (data) => {
@@ -77,35 +81,43 @@ const AudioForm = ({ onSubmit }) => {
             alert("Please select a genre.");
             return;
         }
+        if (!minutes || !seconds) {
+            alert("Please enter the duration in minutes and seconds.");
+            return;
+        }
+
+        const totalSeconds = parseInt(minutes) * 60 + parseInt(seconds);
 
         const audioData = {
             id: uuidv4(),
             title: data.title,
             artist: data.artist,
             genreId: selectedGenre,
-            duration: parseInt(data.duration, 10),
+            description: data.description, // New: Audio Description
+            duration: totalSeconds, // Converted from minutes and seconds
             imageUrl: null,
             fileUrl: null,
         };
 
         try {
-            setIsUploading(true); // Show loading
+            setIsUploading(true);
             await onSubmit(audioData, audioFile, imageFile);
             reset();
-            setAudioFile(null);
-            setAudioFileName('');
-            setImageFile(null);
-            setImagePreview(null);
+            setMinutes('');
+            setSeconds('');
+            clearAudioSelection();
+            clearImageSelection();
         } catch (error) {
             console.error("Error submitting form:", error);
             setSubmitError(error.message || "An unexpected error occurred.");
         } finally {
-            setIsUploading(false); // Hide loading after completion
+            setIsUploading(false);
         }
     };
 
     return (
         <Box component="form" onSubmit={handleSubmit(onSubmitForm)} sx={{ mt: 2 }} noValidate>
+            {/* Title */}
             <TextField
                 margin="normal"
                 required
@@ -116,6 +128,8 @@ const AudioForm = ({ onSubmit }) => {
                 error={!!errors.title}
                 helperText={errors.title?.message}
             />
+
+            {/* Artist */}
             <TextField
                 margin="normal"
                 required
@@ -126,13 +140,14 @@ const AudioForm = ({ onSubmit }) => {
                 error={!!errors.artist}
                 helperText={errors.artist?.message}
             />
+
+            {/* Genre */}
             <FormControl fullWidth margin="normal" required>
                 <InputLabel id="genre-label">Genre</InputLabel>
                 <Select
                     labelId="genre-label"
                     id="genre"
                     value={selectedGenre}
-                    label="Genre"
                     onChange={handleGenreChange}
                     error={!selectedGenre}
                 >
@@ -146,50 +161,97 @@ const AudioForm = ({ onSubmit }) => {
                     <Typography color="error">Genre is required</Typography>
                 )}
             </FormControl>
+
+            {/* Audio Description */}
             <TextField
                 margin="normal"
-                required
                 fullWidth
-                id="duration"
-                label="Duration (seconds)"
-                type="number"
-                {...register("duration", {
-                    required: "Duration is required",
-                    valueAsNumber: true,
-                    validate: (value) =>
-                        !isNaN(parseFloat(value)) && isFinite(value)
-                            ? true
-                            : "Must be a valid number",
-                })}
-                error={!!errors.duration}
-                helperText={errors.duration?.message}
+                multiline
+                rows={4}
+                id="description"
+                label="Audio Description"
+                {...register("description")}
             />
 
-            <input accept="audio/*" style={{ display: 'none' }} id="audio-file" type="file" onChange={handleAudioChange} />
-            <label htmlFor="audio-file">
-                <Button variant="contained" component="span" sx={{ mt: 1, mb: 2 }}>
+            {/* Duration Input */}
+            <Grid container spacing={2}>
+                <Grid item xs={6}>
+                    <TextField
+                        margin="normal"
+                        required
+                        fullWidth
+                        id="minutes"
+                        label="Minutes"
+                        type="number"
+                        value={minutes}
+                        onChange={(e) => setMinutes(e.target.value)}
+                        inputProps={{ min: 0 }}
+                    />
+                </Grid>
+                <Grid item xs={6}>
+                    <TextField
+                        margin="normal"
+                        required
+                        fullWidth
+                        id="seconds"
+                        label="Seconds"
+                        type="number"
+                        value={seconds}
+                        onChange={(e) => setSeconds(e.target.value)}
+                        inputProps={{ min: 0, max: 59 }}
+                    />
+                </Grid>
+            </Grid>
+
+            {/* Audio File Upload */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 2 }}>
+                <Button variant="contained" component="label">
                     Select Audio File
+                    <input hidden accept="audio/*" type="file" onChange={handleAudioChange} />
                 </Button>
-            </label>
-            {audioFileName && (
-                <Typography variant="body2">Selected File: {audioFileName}</Typography>
+                {audioFileName && (
+                    <>
+                        <Typography variant="body2">{audioFileName}</Typography>
+                        <IconButton onClick={clearAudioSelection} color="error">
+                            <DeleteIcon />
+                        </IconButton>
+                    </>
+                )}
+            </Box>
+
+            {/* Audio Preview */}
+            {audioPreview && (
+                <Box sx={{ mt: 2 }}>
+                    <audio controls src={audioPreview} />
+                </Box>
             )}
 
-            <input accept="image/*" style={{ display: 'none' }} id="image-file" type="file" onChange={handleImageChange} />
-            <label htmlFor="image-file">
-                <Button variant="contained" component="span" sx={{ mt: 1, mb: 2 }}>
+            {/* Image File Upload */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 2 }}>
+                <Button variant="contained" component="label">
                     Upload Image
+                    <input hidden accept="image/*" type="file" onChange={handleImageChange} />
                 </Button>
-            </label>
+                {imagePreview && (
+                    <IconButton onClick={clearImageSelection} color="error">
+                        <DeleteIcon />
+                    </IconButton>
+                )}
+            </Box>
+
+            {/* Image Preview */}
             {imagePreview && (
-                <Box sx={{ mt: 2, mb: 2 }}>
+                <Box sx={{ mt: 2 }}>
                     <img src={imagePreview} alt="Preview" style={{ maxWidth: '100%', maxHeight: '200px' }} />
                 </Box>
             )}
 
+            {/* Submit Button */}
             <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }} disabled={isUploading}>
                 {isUploading ? <CircularProgress size={24} sx={{ color: "white" }} /> : "Upload Audio"}
             </Button>
+
+            {/* Error Message */}
             {submitError && (
                 <Alert severity="error" sx={{ mt: 2 }}>
                     {submitError}
