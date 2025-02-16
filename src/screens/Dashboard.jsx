@@ -32,7 +32,7 @@ const Dashboard = () => {
           <ListItemIcon>
             <MusicNoteIcon />
           </ListItemIcon>
-          <ListItemText primary="Manage Audio" />
+          <ListItemText primary="Upload Audio" />
         </ListItem>
         <ListItem button component={Link} to="/audio-list">
           <ListItemIcon>
